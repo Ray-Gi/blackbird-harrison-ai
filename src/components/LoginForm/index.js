@@ -9,28 +9,77 @@ import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import logo from '../../assets/logo.svg';
 
-
 export default function LoginForm() {
   const [showAlert, setShowAlert] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [passError, setPassError] = useState(false);
+  const [errorMessageMail, setErrorMessageMail] = useState('');
+  const [errorMessagePass, setErrorMessagePass] = useState('');
+
+
   const validateForm = (event) => {
     event.preventDefault()
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
     const password = data.get('password');
 
-    // Add validation code here
+    // Validation 
+    const validator = require('email-validator');
+    const validEmail = validator.validate(email);
+
+    if (!validEmail) {
+      setErrorMessageMail("Enter a valid email address")
+      setEmailError(true)
+    }
+
+    const uppercase   = /(?=.*?[A-Z])/.test(password);
+    const lowercase   = /(?=.*?[a-z])/.test(password);
+    const digits      = /(?=.*?[0-9])/.test(password);
+    const specialChar = /(?=.*?[#?!@$%^&*-])/.test(password);
+    const minLength   = /.{8}/.test(password);
+
+    if (password === "") {
+      setErrorMessagePass("Password contain a minimum of 8 characters, 1 lowercase letter, 1 uppercase letter, 1 digit & 1 special Character")
+      setPassError(true)
+    }
+    else if (!uppercase) {
+      setErrorMessagePass("Password must contain 1 uppercase letter")
+      setPassError(true)
+    }
+    else if (!lowercase) {
+      setErrorMessagePass("Password must contain 1 lowercase letter")
+      setPassError(true)
+    }
+    else if (!digits) {
+      setErrorMessagePass("Password must contain at least 1 digit")
+      setPassError(true)
+    }
+    else if (!specialChar) {
+      setErrorMessagePass("Password must contain at least 1 special character")
+      setPassError(true)
+    }
+    else if (!minLength) {
+      setErrorMessagePass("Password must be at least 8 characters long")
+      setPassError(true)
+    }
 
   }
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    
+    const email = data.get('email');
+    const password = data.get('password');
+    // initializes constants from previous submission
+    setEmailError(false)
+    setPassError(false)
+    setErrorMessagePass('')
+    setErrorMessageMail('')
+
     validateForm(event);
-    setShowAlert("Login Successful");
+    if (email !== "" && password !=="" && emailError === false && passError === false) {
+      setShowAlert("Login Successful")};
   };
 
   return (
@@ -85,6 +134,8 @@ export default function LoginForm() {
               id="email"
               label="Email Address"
               name="email"
+              error = {emailError}
+              helperText = {errorMessageMail}
               autoComplete="email"
               autoFocus
             />
@@ -96,6 +147,8 @@ export default function LoginForm() {
               label="Password"
               type="password"
               id="password"
+              error = {passError}
+              helperText = {errorMessagePass}
               autoComplete="current-password"
             />
             <Button
